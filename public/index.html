@@ -49,7 +49,7 @@
 
     <script src="https://www.gstatic.com/firebasejs/3.6.8/firebase.js"></script>
     <script>
-      var auth, database, userInfo;
+      var auth, database, userInfo, selectedKey;
 
       var config = {
         apiKey: "AIzaSyBI8zqLEQsKI4be9Zm4xmrPRNhCNUV_IhU",
@@ -98,7 +98,7 @@
           var memoData = data.val();
 
           var txt = memoData.txt;
-          var title = memoData.title;
+          var title = memoData.substr(0, txt.indexOf('\n'));
           var firstTxt = txt.substr(0, 3);
 
           var html = "<li id='"+key+"' class=\"collection-item avatar\" onclick=\"getDataOne(this.id);\" >" +
@@ -113,6 +113,8 @@
       }
 
       function getDataOne(data){
+        selectedKey = key;
+
         var memoRef = database.ref('memos/'+userInfo.uid+'/'+key)
           .once('value').then(function(snapshot){
             $(".textarea").val(snapshot.val().txt);
@@ -127,11 +129,20 @@
         if(txt == ''){
           return;
         }
+        if(selectedKey){
+          memoRef = database.ref('memos/'+userInfo.uid+'/'+selectedKey);
+          memoRef.update({
+            txt : txt,
+            createData : new Date().getTime(),
+            updateData : new Data().getTime()
+          });
 
-        memoRef.push({
-          txt : txt,
-          createDate : new Date().getTime()
-        });
+        }else{
+          memoRef.push({
+            txt : txt,
+            createData : new Date().getTime()
+          });
+        }
 
       }
 
