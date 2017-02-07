@@ -49,7 +49,7 @@
 
     <script src="https://www.gstatic.com/firebasejs/3.6.8/firebase.js"></script>
     <script>
-      var auth;
+      var auth, database, userInfo;
 
       var config = {
         apiKey: "AIzaSyBI8zqLEQsKI4be9Zm4xmrPRNhCNUV_IhU",
@@ -61,6 +61,8 @@
       firebase.initializeApp(config);
 
       auth = firebase.auth();
+      database = firebase.database();
+
       var authProvider = new firebase.auth.GoogleAuthProvider();
 
       auth.onAuthStateChanged(function(user){
@@ -68,12 +70,59 @@
             // 인증 성공부
             console.log('성공');
             console.log(user);
+
+            userInfo = user;
+
           }else{
             // 인증 실패부
             auth.signInWithPopup(authProvider);
           }
       });
 
+      function getMemoList(){
+          console.log(userInfo.uid);
+          var memoRef = database.ref('memos/'+userInfo.uid);
+
+          memoRef.on('child_added', onChildAdded);
+      }
+
+      function onChildAdded(data){
+          /*
+              {
+                txt : '메모의 본문',
+                title : '메모에 타이틀'
+                updateData : '업데이트날짜',
+                createData : '생성한 날짜'
+              }
+          */
+          var key = data.key;
+          var memoData = data.val();
+
+          var txt = memoData.txt;
+          var title = memoData.txt;
+          var firstTxt = txt.substr(0, 1);
+
+          var html =
+         "<li id='"+key+"' class=\"collection-item avatar\" onclick=\"fn_get_data_one(this.id);\" >" +
+         "<i class=\"material-icons circle red\">" + firstTxt + "</i>" +
+         "<span class=\"title\">" + title + "</span>" +
+         "<p class='txt'>" + summary + "<br>" +
+         "</p>" +
+         "</li>";
+
+         $(".collection").append(html);
+         
+      }
+
+    /*
+        {
+          memos :{
+            uid : { text : '텍스트', 작성일:  '작성일', 제목 : '제목'},
+            uid : { text : '텍스트', 작성일:  '작성일', 제목 : '제목'},
+            uid : { text : '텍스트', 작성일:  '작성일', 제목 : '제목'},
+          }
+        }
+    */
     </script>
 
     </body>
