@@ -49,132 +49,114 @@
 
     <script src="https://www.gstatic.com/firebasejs/3.6.8/firebase.js"></script>
     <script>
-      var auth, database, userInfo, selectedKey;
+    
+    var auth, database, userInfo, selectedKey;
+    var config = {
+      apiKey: "AIzaSyBI8zqLEQsKI4be9Zm4xmrPRNhCNUV_IhU",
+      authDomain: "memoapp-dd157.firebaseapp.com",
+      databaseURL: "https://memoapp-dd157.firebaseio.com",
+      storageBucket: "memoapp-dd157.appspot.com",
+      messagingSenderId: "67758349179"
+    };
+    firebase.initializeApp(config);
+    auth = firebase.auth();
+    database = firebase.database();
 
-      var config = {
-        apiKey: "AIzaSyBI8zqLEQsKI4be9Zm4xmrPRNhCNUV_IhU",
-        authDomain: "memoapp-dd157.firebaseapp.com",
-        databaseURL: "https://memoapp-dd157.firebaseio.com",
-        storageBucket: "memoapp-dd157.appspot.com",
-        messagingSenderId: "67758349179"
-      };
-      firebase.initializeApp(config);
-
-      auth = firebase.auth();
-      database = firebase.database();
-
-      var authProvider = new firebase.auth.GoogleAuthProvider();
-
-      auth.onAuthStateChanged(function(user){
-          if(user){
-            // 인증 성공부
-            console.log('성공');
-            console.log(user);
-
-            userInfo = user;
-
-          }else{
-            // 인증 실패부
-            auth.signInWithPopup(authProvider);
-          }
-      });
-
-      function getMemoList(){
-          console.log(userInfo.uid);
-          var memoRef = database.ref('memos/'+userInfo.uid);
-
-          memoRef.on('child_added', onChildAdded);
-          memoRef.on('child_changed', function(data){
-            var key = data.key;
-            var txt = data.val().txt;
-            var title = txt.substr(0, txt.indexOf('\n'));
-
-            $("#"+"> .title").text(title);
-            $("#"+"> .txt").text(txt);
-          });
+    var authProvider = new firebase.auth.GoogleAuthProvider();
+    auth.onAuthStateChanged(function(user) {
+      if (user) {
+        //signed
+        userInfo = user;
+        console.log('success', user);
+        getMemoList();
+      } else {
+        // denied
+        auth.signInWithPopup(authProvider);
       }
+    });
 
-      function onChildAdded(data){
-          /*
-              {
-                txt : '메모의 본문',
-                updateData : '업데이트날짜',
-                createData : '생성한 날짜'
-              }
-          */
-          var key = data.key;
-          var memoData = data.val();
+    function getMemoList() {
+      var memoRef = database.ref('memos/' + userInfo.uid);
+      memoRef.on('child_added', onChildAdded);
+      memoRef.on('child_changed', onChildChanged);
+    }
 
-          var txt = memoData.txt;
-          var title = memoData.substr(0, txt.indexOf('\n'));
-          var firstTxt = txt.substr(0, 3);
+    function onChildChanged(data) {
+        $('#'+data.key).replaceWith(getHtml(data));
+    }
 
-          var html = "<li id='"+key+"' class=\"collection-item avatar\" onclick=\"getDataOne(this.id);\" >" +
-         "<i class=\"material-icons circle red\">" + firstTxt + "</i>" +
+    function onChildAdded(data) {
+         $('.collection').append(getHtml(data));
+    }
+
+    function getHtml(data) {
+      var key = data.key;
+      var memo = data.val();
+      console.log('childData', key);
+      console.log('childData', memo);
+      var txt = memo.txt;
+      var title = txt.substr(0, 3);
+      var firstTxt = txt.substr(0,1);
+      return "<li id='"+key+"' class=\"collection-item avatar\" onclick=\"getMemo(this.id);\" >" +
+         "<i class=\"material-icons circle red\">" +firstTxt + "</i>" +
          "<span class=\"title\">" + title + "</span>" +
          "<p class='txt'>" + txt + "<br>" +
          "</p>" +
-         "<a href=\"#!\" onclick=\"deleteData('"+key+"')\" class=\"secondary-content\"><i class=\"material-icons\">grade</i></a>"+
+         "<a href=\"#\" onclick=\"deleteMemo('"+ key +"')\">삭제</a>" +
          "</li>";
 
-         $(".collection").append(html);
+    }
 
-      }
-
-      function getDataOne(data){
-        selectedKey = key;
-
-        var memoRef = database.ref('memos/'+userInfo.uid+'/'+key)
-          .once('value').then(function(snapshot){
-            $(".textarea").val(snapshot.val().txt);
-
-          });
-
-      }
-
-      function deleteData(key){
-        if(!confirem('삭제하시겠습니까?')){
-          return;
-        }
-        
-        var memoRef = database.ref('memos/'+userInfo.uid+'/'+key);
-        memoRef.remove();
-        $("#"+key).remove();
-      }
-
-      function saveData(){
-        var memoRef = database.ref('memos/'+userInfo.uid);
-        var txt = $(".textarea").val();
-        if(txt == ''){
-          return;
-        }
-        if(selectedKey){
-          memoRef = database.ref('memos/'+userInfo.uid+'/'+selectedKey);
-          memoRef.update({
-            txt : txt,
-            createData : new Date().getTime(),
-            updateData : new Data().getTime()
-          });
-
-        }else{
-          memoRef.push({
-            txt : txt,
-            createData : new Date().getTime()
-          });
-        }
-
-      }
-
-      function initMemo(){
-        $('.textarea').val('');
-        selectedKey = null;
-      }
-
-      $(function(){
-        $(".textarea").blur(function(){
-          saveData();
+    function getMemo(key) {
+      selectedKey = key;
+      var memoRef = database.ref('memos/' + userInfo.uid + '/' + key)
+        .once('value')
+        .then(function(snapshot) {
+          $('.textarea').val(snapshot.val().txt);
         });
+    }
+
+    function saveMemo() {
+      var memoRef = database.ref('memos/' + userInfo.uid);
+      var txt = $('.textarea').val();
+      if (!txt) {
+        return;
+      }
+
+      if(selectedKey) {
+        var memoRef2 = database.ref('memos/' + userInfo.uid + '/' + selectedKey);
+        memoRef2.update({
+          txt: txt,
+          updateDate: new Date().getTime()
+        })
+      } else {
+        memoRef.push({
+          txt: txt,
+          createDate: new Date().getTime()
+        })
+      }
+    }
+
+    function initMemo() {
+      $('.textarea').val('');
+      selectedKey = undefined;
+    }
+
+    function deleteMemo(key) {
+      if (!confirm('삭제하시겠습니까?')) {
+        return;
+      } else {
+        var memoRef = database.ref('memos/' + userInfo.uid + '/' + key);
+        memoRef.remove();
+        $('#'+key).remove();
+      }
+    }
+
+    $(function() {
+      $('.textarea').blur(function() {
+        saveMemo();
       });
+    });
     /*
         {
           memos :{
