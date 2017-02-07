@@ -46,5 +46,35 @@
     <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/js/materialize.min.js"></script>
 
+
+    <script src="https://www.gstatic.com/firebasejs/3.6.8/firebase.js"></script>
+    <script>
+      var auth;
+
+      var config = {
+        apiKey: "AIzaSyBI8zqLEQsKI4be9Zm4xmrPRNhCNUV_IhU",
+        authDomain: "memoapp-dd157.firebaseapp.com",
+        databaseURL: "https://memoapp-dd157.firebaseio.com",
+        storageBucket: "memoapp-dd157.appspot.com",
+        messagingSenderId: "67758349179"
+      };
+      firebase.initializeApp(config);
+
+      auth = firebase.auth();
+      var authProvider = new firebase.auth.GoogleAuthProvider();
+
+      auth.onAuthStateChanged(function(user){
+          if(user){
+            // 인증 성공부
+            console.log('성공');
+            console.log(user);
+          }else{
+            // 인증 실패부
+            auth.signInWithPopup(authProvider);
+          }
+      });
+
+    </script>
+
     </body>
   </html>
