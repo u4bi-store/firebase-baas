@@ -23,7 +23,7 @@ function init(){
             userInfo = user;
             console.log('인증완료 : ', user);
             
-            authInfo(user); /* 인증 유저 정보조회*/
+            authInfo(user); /* 인증 유저의 제공 사이트 정보조회*/
             selects(); /* 모든 유저를 조회함 */
         } else {
             // 재로그인
@@ -89,13 +89,14 @@ function onChildAdded(data) {
     var txt = json.txt;
     var date = json.createDate;
 
-    console.log('유저의 키코드 : '+key);
-    console.log('내용 : '+txt);
-    console.log('기록시간 : '+date);
-    console.log('----------------------');
+    // console.log('유저의 키코드 : '+key);
+    // console.log('내용 : '+txt);
+    // console.log('기록시간 : '+date);
+    // console.log('----------------------');
 
 }
 
+/* 인증 유저의 제공 사이트 프로필 정보조회*/
 function authInfo(user){
     user.providerData.forEach(function (profile) {
         console.log("제공 사이트: "+profile.providerId);
@@ -105,5 +106,34 @@ function authInfo(user){
         console.log("유저 사진 : "+profile.photoURL);
     });
     console.log('-----------------------------------');
+    
+    profileInfo(user); /* 변경전 인증 유저의 사용자 프로필 조회 */
+    authProfileUpdate(user);/* 인증 유저의 사용자 프로필 업데이트 */
+}
 
+/* 인증 유저 프로필 업데이트*/
+function authProfileUpdate(user){
+    user.updateProfile({
+        displayName: "닉네임 변경함",
+        photoURL: "https://example.com/jane-q-user/profile.jpg"
+    }).then(function() {
+        console.log('인증 유저 프로필 업데이트 성공');
+        profileInfo(user); /* 변경후 인증 유저의 사용자 프로필 조회 */
+    }, function(error) {
+        console.log(error); /* 에러 송신부 */
+    });
+    console.log('-----------------------------------');
+}
+
+function profileInfo(user){
+
+    var uid = user.uid;
+    var name = user.displayName;
+    var email = user.email;
+    var photo = user.photoURL;
+
+    console.log('유저 고유번호 : '+uid);
+    console.log('유저이름 : '+name);
+    console.log('유저 이메일 : '+email);
+    console.log('유저 사진 : '+photo);
 }
