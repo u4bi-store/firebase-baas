@@ -21,8 +21,10 @@ function init(){
         if (user) {
             // 회원가입
             userInfo = user;
-            console.log(' success', user);
-            selects();
+            console.log('인증완료 : ', user);
+            
+            authInfo(user); /* 인증 유저 정보조회*/
+            selects(); /* 모든 유저를 조회함 */
         } else {
             // 재로그인
             auth.signInWithPopup(authProvider);
@@ -70,7 +72,7 @@ function save() {
 function remove(key) {
     var memoRef = database.ref('memos/' + userInfo.uid + '/' + key);        
     console.log(memoRef);
-    console.log(' remove -------------------------');
+    console.log(' 삭제 -------------------------');
     memoRef.remove();
 }
 
@@ -81,6 +83,27 @@ function onChildChanged(data) {
 }
 
 function onChildAdded(data) {
-    console.log(data.val());
-    console.log(' added -------------------------');
+    var key = data.key;
+    var json = data.val();
+
+    var txt = json.txt;
+    var date = json.createDate;
+
+    console.log('유저의 키코드 : '+key);
+    console.log('내용 : '+txt);
+    console.log('기록시간 : '+date);
+    console.log('----------------------');
+
+}
+
+function authInfo(user){
+    user.providerData.forEach(function (profile) {
+        console.log("제공 사이트: "+profile.providerId);
+        console.log("유저 고유번호 : "+profile.uid);
+        console.log("유저 이름 : "+profile.displayName);
+        console.log("유저 이메일 : "+profile.email);
+        console.log("유저 사진 : "+profile.photoURL);
+    });
+    console.log('-----------------------------------');
+
 }
