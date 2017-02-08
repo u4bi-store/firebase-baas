@@ -80,19 +80,24 @@ function save(str, selectedKey = undefined) {
     }
 }
 
+
+/* 유저의 아이템 삭제 remove(itemArray[0]) */
 function remove(key) {
-    var memoRef = database.ref('memos/' + userInfo.uid + '/' + key);        
-    console.log(memoRef);
-    console.log(' 삭제 -------------------------');
+    console.log(' 삭제할 아이템의 고유번호 : '+key);
+
+    var memoRef = database.ref('memos/' + userInfo.uid + '/' + key);
     memoRef.remove();
+    console.log(' 지정한 아이템 삭제 완료');
 }
 
 
+/* 데이터가 변경되었음을 알리는 콜백 */
 function onChildChanged(data) {
-    console.log(data);
-    console.log(' changed -------------------------');
+
+    console.log(' 데이터 변경됨');
 }
 
+/* 데이터가 추가되었음을 알리는 콜백 */
 function onChildAdded(data) {
     var key = data.key;
     var json = data.val();
@@ -100,6 +105,8 @@ function onChildAdded(data) {
     var txt = json.txt;
     var date = json.createDate;    
     itemArray.push({itemId : key});
+
+    console.log(' 데이터 추가됨');
 }
 
 /* 인증 유저의 제공 사이트 프로필 정보조회*/
